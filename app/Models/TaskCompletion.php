@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class TaskCompletion extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'task_id',
+        'user_id',
+        'screenshots',
+        'remarks',
+        'verification_status',
+        'admin_remarks',
+    ];
+
+    protected $casts = [
+        'screenshots' => 'json',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}

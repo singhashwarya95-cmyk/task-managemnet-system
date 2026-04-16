@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Task Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .filters {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 500;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        select, input {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .requests-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .request-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .request-card.create {
+            border-left-color: #27ae60;
+        }
+
+        .request-card.update {
+            border-left-color: #3498db;
+        }
+
+        .request-card.delete {
+            border-left-color: #e74c3c;
+        }
+
+        .request-card.completion {
+            border-left-color: #f39c12;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .request-type {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .request-user {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .request-content {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-approve {
+            background: #27ae60;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-approve:hover {
+            background: #229954;
+        }
+
+        .btn-reject {
+            background: #e74c3c;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-reject:hover {
+            background: #c0392b;
+        }
+
+        .tasks-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .tasks-table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tasks-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #FFF2CC;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #D5E8D4;
+            color: #265c36;
+        }
+
+        .status-rejected {
+            background: #F8CECC;
+            color: #9c1c1c;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .completion-screenshots {
+            margin-top: 10px;
+        }
+
+        .screenshot-preview {
+            display: inline-block;
+            margin: 5px;
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        .screenshot-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .tasks-table {
+                font-size: 12px;
+            }
+
+            .tasks-table th, .tasks-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">📋 Admin Dashboard</div>
+        <div class="user-info">
+            <span id="userName">Admin</span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('requests')">
+                Pending Requests
+            </button>
+            <button class="tab-btn" onclick="switchTab('tasks')">
+                All Tasks
+            </button>
+        </div>
+
+        <div id="alert"></div>
+
+        <!-- Pending Requests Tab -->
+        <div id="requests" class="tab-content active">
+            <h2>Pending Requests</h2>
+            
+            <div id="requestsContainer" class="requests-grid">
+                <div class="loading">Loading requests...</div>
+            </div>
+        </div>
+
+        <!-- All Tasks Tab -->
+        <div id="tasks" class="tab-content">
+            <h2>All Tasks</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Filter by User</label>
+                    <select id="filterUser" onchange="applyFilters()">
+                        <option value="">All Users</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Filter by Status</label>
+                    <select id="filterStatus" onchange="applyFilters()">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Ongoing">Ongoing</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Filter by Approval</label>
+                    <select id="filterApproval" onchange="applyFilters()">
+                        <option value="">All</option>
+                        <option value="Pending">Pending Approval</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tasks-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>User</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Approval Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tasksTable">
+                    <tr><td colspan="5" class="loading">Loading tasks...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Provide Rejection Remarks</span>
+                <button class="modal-close" onclick="closeRejectionModal()">×</button>
+            </div>
+            <form onsubmit="submitRejection(event)">
+                <div class="form-group">
+                    <label>Remarks (Required)</label>
+                    <textarea id="rejectionRemarks" required placeholder="Explain why you're rejecting this request..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" style="background: #e74c3c; color: white; flex: 1;" class="btn">Reject</button>
+                    <button type="button" style="background: #95a5a6; color: white; flex: 1;" class="btn" onclick="closeRejectionModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Completion Details Modal -->
+    <div id="completionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Task Completion Submission</span>
+                <button class="modal-close" onclick="closeCompletionModal()">×</button>
+            </div>
+            <div id="completionDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let token = localStorage.getItem('token');
+        let currentRequestId = null;
+        let currentRequestType = null;
+        let pollInterval;
+
+        if (!token) {
+            window.location.href = '/index.html';
+        }
+
+        const user = JSON.parse(atob(localStorage.getItem('user')));
+        if (user.role !== 'admin') {
+            window.location.href = '/dashboard.html';
+        }
+
+        document.getElementById('userName').textContent = user.name;
+
+        // Load data on page load
+        loadRequests();
+        loadAllTasks();
+
+        // Set up real-time polling
+        pollInterval = setInterval(() => {
+            loadRequests();
+            loadAllTasks();
+        }, 3000);
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/requests`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                const data = await response.json();
+                displayRequests(data);
+            } catch (error) {
+                console.error('Error loading requests:', error);
+            }
+        }
+
+        function displayRequests(data) {
+            const container = document.getElementById('requestsContainer');
+            const allRequests = [];
+
+            // Add action requests
+            (data.action_requests || []).forEach(req => {
+                allRequests.push({ ...req, type: 'action' });
+            });
+
+            // Add completion requests
+            (data.completion_requests || []).forEach(req => {
+                allRequests.push({ ...req, type: 'completion' });
+            });
+
+            if (allRequests.length === 0) {
+                container.innerHTML = '<div class="empty-state">No pending requests</div>';
+                return;
+            }
+
+            container.innerHTML = allRequests.map(req => {
+                if (req.type === 'action') {
+                    return `
+                        <div class="request-card ${req.action_type.toLowerCase()}">
+                            <div class="request-header">
+                                <span class="request-type">${req.action_type}</span>
+                            </div>
+                            <div class="request-user">User: <strong>${req.user.name}</strong></div>
+                            <div class="request-content">
+                                ${req.action_type === 'Create' ? `
+                                    <strong>New Task:</strong><br>
+                                    Title: ${req.new_data.title}<br>
+                                    Deadline: ${new Date(req.new_data.deadline).toLocaleString()}
+                                ` : req.action_type === 'Update' ? `
+                                    <strong>Update Task:</strong><br>
+                                    ${renderChanges(req.old_data, req.new_data)}
+                                ` : req.action_type === 'Delete' ? `
+                                    <strong>Delete Task:</strong><br>
+                                    ${req.old_data.title}
+                                ` : ''}
+                            </div>
+                            <div class="request-actions">
+                                <button class="btn btn-approve" onclick="approveRequest(${req.id})">Approve</button>
+                                <button class="btn btn-reject" onclick="openRejectionModal(${req.id}, 'action')">Reject</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="request-card completion">
+                            <div class="request-header">
+                                <span class="request-type">COMPLETION</span>
+                            </div>
+                            <div class="request-user">User: <strong>${req.user.name}</strong></div>
+                            <div class="request-content">
+                                Task: <strong>${req.task.title}</strong><br>
+                                Screenshots: ${req.screenshots.length} uploaded<br>
+                                Remarks: ${req.remarks.substring(0, 50)}...
+                            </div>
+                            <div class="request-actions">
+                                <button class="btn btn-approve" onclick="verifyCompletion(${req.id})">Verify</button>
+                                <button class="btn btn-reject" onclick="openRejectCompletionModal(${req.id})">Reject</button>
+                                <button style="background: #3498db; color: white; flex: 1;" class="btn" onclick="showCompletionDetails(${req.id})">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function renderChanges(oldData, newData) {
+            let html = '';
+            for (let key in newData) {
+                if (oldData[key] !== newData[key]) {
+                    html += `${key}: <strong>${oldData[key]} → ${newData[key]}</strong><br>`;
+                }
+            }
+            return html;
+        }
+
+        async function loadAllTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/tasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const tasks = await response.json();
+                displayAllTasks(tasks);
+                populateUserFilter(tasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+        }
+
+        function displayAllTasks(tasks) {
+            const tbody = document.getElementById('tasksTable');
+
+            if (tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No tasks found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tasks.map(task => `
+                <tr>
+                    <td><strong>${task.title}</strong></td>
+                    <td>${task.user.name}</td>
+                    <td>${new Date(task.deadline).toLocaleDateString()}</td>
+                    <td>
+                        <span class="status-badge status-${task.status.toLowerCase()}">
+                            ${task.status}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${task.approval_status.toLowerCase()}">
+                            ${task.approval_status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function populateUserFilter(tasks) {
+            const userSelect = document.getElementById('filterUser');
+            const users = [...new Set(tasks.map(t => JSON.stringify({id: t.user_id, name: t.user.name})))];
+
+            userSelect.innerHTML = '<option value="">All Users</option>' +
+                users.map(u => {
+                    const user = JSON.parse(u);
+                    return `<option value="${user.id}">${user.name}</option>`;
+                }).join('');
+        }
+
+        async function approveRequest(requestId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/approve-request/${requestId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showAlert(result.message || 'Error approving request', 'error');
+                    return;
+                }
+
+                showAlert('Request approved successfully', 'success');
+                loadRequests();
+                loadAllTasks();
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function verifyCompletion(completionId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/verify-completion/${completionId}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showAlert(result.message || 'Error verifying completion', 'error');
+                    return;
+                }
+
+                showAlert('Task completion verified', 'success');
+                loadRequests();
+                loadAllTasks();
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        function openRejectionModal(requestId, type) {
+            currentRequestId = requestId;
+            currentRequestType = type;
+            document.getElementById('rejectionModal').classList.add('active');
+        }
+
+        function openRejectCompletionModal(completionId) {
+            currentRequestId = completionId;
+            currentRequestType = 'completion';
+            document.getElementById('rejectionModal').classList.add('active');
+        }
+
+        function closeRejectionModal() {
+            document.getElementById('rejectionModal').classList.remove('active');
+            document.getElementById('rejectionRemarks').value = '';
+        }
+
+        async function submitRejection(e) {
+            e.preventDefault();
+            const remarks = document.getElementById('rejectionRemarks').value;
+
+            try {
+                let url, method = 'POST';
+                if (currentRequestType === 'action') {
+                    url = `${API_BASE}/admin/reject-request/${currentRequestId}`;
+                } else {
+                    url = `${API_BASE}/admin/reject-completion/${currentRequestId}`;
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ remarks })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showAlert(result.message || 'Error rejecting request', 'error');
+                    return;
+                }
+
+                showAlert('Request rejected successfully', 'success');
+                closeRejectionModal();
+                loadRequests();
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        function showCompletionDetails(completionId) {
+            // This would need an additional API endpoint to fetch full completion details
+            document.getElementById('completionModal').classList.add('active');
+        }
+
+        function closeCompletionModal() {
+            document.getElementById('completionModal').classList.remove('active');
+        }
+
+        function applyFilters() {
+            // Implement filtering logic
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            clearInterval(pollInterval);
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>
